@@ -185,6 +185,7 @@ export const queryRunningLock = new ServiceLock(`query-running`, [
 ])
 export const requiresWriterLock = new ServiceLock(`requires-writer`, [
   `create-pages`,
+  `query-running`,
 ])
 export const webpackLock = new ServiceLock(`webpack`, [`requires-writer`])
 export const pageDataFlushLock = new ServiceLock(`page-data-flush`, [
