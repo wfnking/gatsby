@@ -541,7 +541,7 @@ const fluidNodeType = ({ name, getTracedSVG }) => {
   }
 }
 
-exports.extendNodeType = ({ type, store }) => {
+exports.extendNodeType = ({ type, store, cache }) => {
   if (type.name.match(/contentful.*RichTextNode/)) {
     return {
       nodeType: {
@@ -551,6 +551,74 @@ exports.extendNodeType = ({ type, store }) => {
       json: {
         type: GraphQLString,
         deprecationReason: `This field is deprecated, please use 'raw' instead. @todo add link to migration steps.`,
+      },
+      references: {
+        type: [`ContentfulReference`],
+        async resolve(source, args, context, info) {
+          const parent = await context.nodeModel.findRootNodeAncestor(source)
+
+          const rawReferences = { Entry: [], Asset: [] }
+
+          // Locate all Contentful Links within the rich text data
+          const traverse = obj => {
+            for (let k in obj) {
+              const value = obj[k]
+              if (value && value.sys && value.sys.type === `Link`) {
+                rawReferences[value.sys.linkType].push(value.sys.contentful_id)
+              } else if (value && typeof value === `object`) {
+                traverse(value)
+              }
+            }
+          }
+
+          traverse(JSON.parse(source.raw))
+
+          if (!rawReferences.Entry.length && !rawReferences.Asset.length) {
+            return null
+          }
+
+          // Query for referenced nodes
+          rawReferences.Entry = [...new Set(rawReferences.Entry)]
+          rawReferences.Asset = [...new Set(rawReferences.Asset)]
+
+          const resultEntries = await context.nodeModel.runQuery({
+            query: {
+              filter: {
+                contentful_id: { in: rawReferences.Entry },
+              },
+            },
+            type: `ContentfulEntry`,
+          })
+
+          const resultAssets = await context.nodeModel.runQuery({
+            query: {
+              filter: {
+                contentful_id: { in: rawReferences.Asset },
+              },
+            },
+            type: `ContentfulAsset`,
+          })
+
+          // Localize results
+          const nodeLocale = parent.node_locale
+
+          const findForLocaleWithFallback = (nodeList = [], referenceId) =>
+            nodeList.find(
+              result =>
+                result.contentful_id === referenceId &&
+                result.node_locale === nodeLocale
+            )
+
+          const localizedEntryReferences = rawReferences.Entry.map(
+            referenceId => findForLocaleWithFallback(resultEntries, referenceId)
+          )
+
+          const localizedAssetReferences = rawReferences.Asset.map(
+            referenceId => findForLocaleWithFallback(resultAssets, referenceId)
+          )
+
+          return [...localizedEntryReferences, ...localizedAssetReferences]
+        },
       },
     }
   }

@@ -46,10 +46,11 @@ exports.sourceNodes = async (
     cache,
     getCache,
     reporter,
+    schema,
   },
   pluginOptions
 ) => {
-  const { createNode, deleteNode, touchNode } = actions
+  const { createNode, deleteNode, touchNode, createTypes } = actions
   const client = createClient({
     space: `none`,
     accessToken: `fake-access-token`,
@@ -116,6 +117,44 @@ exports.sourceNodes = async (
     reporter,
     pluginConfig,
   })
+
+  createTypes(`
+  interface ContentfulEntry @nodeInterface {
+    contentful_id: String!
+    id: ID!
+  }
+`)
+
+  createTypes(`
+  interface ContentfulReference {
+    contentful_id: String!
+    id: ID!
+  }
+`)
+
+  createTypes(
+    schema.buildObjectType({
+      name: `ContentfulAsset`,
+      fields: {
+        contentful_id: { type: `String!` },
+        id: { type: `ID!` },
+        foo: { type: `String` },
+      },
+      interfaces: [`ContentfulReference`, `Node`],
+    })
+  )
+
+  const gqlTypes = contentTypeItems.map(contentTypeItem =>
+    schema.buildObjectType({
+      name: _.upperFirst(_.camelCase(`Contentful ${contentTypeItem.name}`)),
+      fields: {
+        contentful_id: { type: `String!` },
+        id: { type: `ID!` },
+      },
+      interfaces: [`ContentfulReference`, `ContentfulEntry`, `Node`],
+    })
+  )
+  createTypes(gqlTypes)
 
   console.time(`Process Contentful data`)
 
@@ -328,7 +367,6 @@ exports.sourceNodes = async (
         locales,
         space,
         useNameForId: pluginConfig.get(`useNameForId`),
-        richTextOptions: pluginConfig.get(`richText`),
       })
     )
   }
