@@ -2,7 +2,7 @@ import fs from "fs-extra"
 import path from "path"
 import { IGatsbyPage } from "../redux/types"
 import { websocketManager } from "./websocket-manager"
-import { isWebpackStatusPending } from "./webpack-status"
+import { pageDataFlushLock } from "./service-locks"
 import { store } from "../redux"
 
 import { IExecutionResult } from "../query/types"
@@ -100,6 +100,7 @@ export async function flush(): Promise<void> {
     // We're already in the middle of a flush
     return
   }
+  pageDataFlushLock.markStartRun()
   isFlushPending = false
   isFlushing = true
   const { pendingPageDataWrites, components, pages, program } = store.getState()
@@ -145,13 +146,10 @@ export async function flush(): Promise<void> {
     type: `CLEAR_PENDING_PAGE_DATA_WRITES`,
   })
   isFlushing = false
+  pageDataFlushLock.markEndRun()
   return
 }
 
 export function enqueueFlush(): void {
-  if (isWebpackStatusPending()) {
-    isFlushPending = true
-  } else {
-    flush()
-  }
+  pageDataFlushLock.runOrEnqueue(flush)
 }

@@ -15,11 +15,8 @@ import { prepareUrls } from "../utils/prepare-urls"
 import { startServer } from "../utils/start-server"
 import { WebsocketManager } from "../utils/websocket-manager"
 import { IBuildContext } from "./"
-import {
-  markWebpackStatusAsPending,
-  markWebpackStatusAsDone,
-} from "../utils/webpack-status"
 import { enqueueFlush } from "../utils/page-data"
+import { webpackLock, pageDataFlushLock } from "../utils/service-locks"
 
 export async function startWebpackServer({
   program,
@@ -32,24 +29,31 @@ export async function startWebpackServer({
   if (!program || !app) {
     throw new Error(`Missing required params`)
   }
-  let { compiler, webpackActivity, websocketManager } = await startServer(
-    program,
-    app,
-    workerPool
-  )
+
+  webpackLock.markStartRun()
+  let {
+    compiler,
+    webpackActivity,
+    websocketManager,
+    getWebpackWatching,
+  } = await startServer(program, app, workerPool)
 
   compiler.hooks.invalid.tap(`log compiling`, function () {
-    markWebpackStatusAsPending()
+    webpackLock.markAsPending()
+
+    webpackLock.runOrEnqueue(() => {
+      webpackLock.markStartRun()
+      getWebpackWatching().resume()
+    })
   })
 
   compiler.hooks.watchRun.tapAsync(`log compiling`, function (_, done) {
-    if (webpackActivity) {
-      webpackActivity.end()
+    if (!webpackActivity) {
+      webpackActivity = report.activityTimer(`Re-building development bundle`, {
+        id: `webpack-develop`,
+      })
+      webpackActivity.start()
     }
-    webpackActivity = report.activityTimer(`Re-building development bundle`, {
-      id: `webpack-develop`,
-    })
-    webpackActivity.start()
 
     done()
   })
@@ -109,8 +113,9 @@ export async function startWebpackServer({
         webpackActivity.end()
         webpackActivity = null
       }
-      enqueueFlush()
-      markWebpackStatusAsDone()
+      getWebpackWatching().suspend()
+      webpackLock.markEndRun()
+      pageDataFlushLock.runOrEnqueue(enqueueFlush)
       done()
       resolve({ compiler, websocketManager })
     })

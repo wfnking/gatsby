@@ -3,11 +3,13 @@ const apiRunnerNode = require(`../utils/api-runner-node`)
 const { boundActionCreators } = require(`../redux/actions`)
 const { deletePage, deleteComponentsDependencies } = boundActionCreators
 const report = require(`gatsby-cli/lib/reporter`)
+import { createPagesLock } from "../utils/service-locks"
 
 let pagesDirty = false
 let graphql
 
 const runCreatePages = async () => {
+  createPagesLock.markStartRun()
   pagesDirty = false
 
   const timestamp = Date.now()
@@ -38,6 +40,7 @@ const runCreatePages = async () => {
     }
   })
 
+  createPagesLock.markEndRun()
   emitter.emit(`CREATE_PAGE_END`)
 }
 
@@ -46,11 +49,13 @@ module.exports = graphqlRunner => {
   emitter.on(`CREATE_NODE`, action => {
     if (action.payload.internal.type !== `SitePage`) {
       pagesDirty = true
+      createPagesLock.markAsPending()
     }
   })
   emitter.on(`DELETE_NODE`, action => {
     if (action.payload.internal.type !== `SitePage`) {
       pagesDirty = true
+      createPagesLock.markAsPending()
       // Make a fake API call to trigger `API_RUNNING_QUEUE_EMPTY` being called.
       // We don't want to call runCreatePages here as there might be work in
       // progress. So this is a safe way to make sure runCreatePages gets called
@@ -60,8 +65,10 @@ module.exports = graphqlRunner => {
   })
 
   emitter.on(`API_RUNNING_QUEUE_EMPTY`, () => {
-    if (pagesDirty) {
-      runCreatePages()
-    }
+    createPagesLock.runOrEnqueue(() => {
+      if (pagesDirty) {
+        runCreatePages()
+      }
+    })
   })
 }

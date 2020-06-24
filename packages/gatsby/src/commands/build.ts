@@ -32,10 +32,7 @@ import {
   runPageQueries,
   writeOutRequires,
 } from "../services"
-import {
-  markWebpackStatusAsPending,
-  markWebpackStatusAsDone,
-} from "../utils/webpack-status"
+import { webpackLock } from "../utils/service-locks"
 
 let cachedPageData
 let cachedWebpackCompilationHash
@@ -63,7 +60,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
     )
   }
 
-  markWebpackStatusAsPending()
+  webpackLock.markAsPending()
 
   const publicDir = path.join(program.directory, `public`)
   initTracer(program.openTracingConfigFile)
@@ -124,6 +121,7 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
   )
   buildActivityTimer.start()
   let stats
+  webpackLock.markStartRun()
   try {
     stats = await buildProductionBundle(program, buildActivityTimer.span)
   } catch (err) {
@@ -157,8 +155,8 @@ module.exports = async function build(program: IBuildArgs): Promise<void> {
     rewriteActivityTimer.end()
   }
 
+  webpackLock.markEndRun()
   await flushPendingPageDataWrites()
-  markWebpackStatusAsDone()
 
   if (process.env.GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES) {
     const { pages } = store.getState()

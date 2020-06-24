@@ -20,7 +20,7 @@ import {
   showFeedbackRequest,
 } from "../utils/feedback"
 
-import { markWebpackStatusAsPending } from "../utils/webpack-status"
+import { webpackLock } from "../utils/service-locks"
 
 import { IProgram } from "./types"
 import {
@@ -90,7 +90,7 @@ module.exports = async (program: IProgram): Promise<void> => {
     )
   }
   initTracer(program.openTracingConfigFile)
-  markWebpackStatusAsPending()
+  webpackLock.markAsPending()
   report.pendingActivity({ id: `webpack-develop` })
   telemetry.trackCli(`DEVELOP_START`)
   telemetry.startBackgroundUpdate()

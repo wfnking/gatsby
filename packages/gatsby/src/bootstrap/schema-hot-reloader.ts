@@ -1,10 +1,11 @@
-import { debounce, cloneDeep } from "lodash"
+import { cloneDeep } from "lodash"
 import { emitter, store } from "../redux"
 import { rebuild } from "../schema"
 import { haveEqualFields } from "../schema/infer/inference-metadata"
 import { updateStateAndRunQueries } from "../query/query-watcher"
 import report from "gatsby-cli/lib/reporter"
 import { IGatsbyState } from "../redux/types"
+import { schemaRebuildLock } from "../utils/service-locks"
 
 type TypeMap = IGatsbyState["inferenceMetadata"]["typeMap"]
 type InferenceMetadata = IGatsbyState["inferenceMetadata"]
@@ -20,9 +21,7 @@ const inferredTypesChanged = (
 
 let lastMetadata: InferenceMetadata
 
-// API_RUNNING_QUEUE_EMPTY could be emitted multiple types
-// in a short period of time, so debounce seems reasonable
-const maybeRebuildSchema = debounce(async (): Promise<void> => {
+const maybeRebuildSchema = async (): Promise<void> => {
   const { inferenceMetadata } = store.getState()
 
   if (!inferredTypesChanged(inferenceMetadata.typeMap, lastMetadata.typeMap)) {
@@ -34,7 +33,15 @@ const maybeRebuildSchema = debounce(async (): Promise<void> => {
   await rebuild({ parentSpan: activity })
   await updateStateAndRunQueries(false, { parentSpan: activity })
   activity.end()
-}, 1000)
+}
+
+function controlledMaybeRebuildSchema(): void {
+  schemaRebuildLock.runOrEnqueue(async () => {
+    schemaRebuildLock.markStartRun()
+    await maybeRebuildSchema()
+    schemaRebuildLock.markEndRun()
+  })
+}
 
 function snapshotInferenceMetadata(): void {
   const { inferenceMetadata } = store.getState()
@@ -51,13 +58,18 @@ export function bootstrapSchemaHotReloader(): void {
   startSchemaHotReloader()
 }
 
+const boundMarkAsPending = schemaRebuildLock.markAsPending.bind(
+  schemaRebuildLock
+)
+
 export function startSchemaHotReloader(): void {
   // Listen for node changes outside of a regular sourceNodes API call,
   // e.g. markdown file update via watcher
-  emitter.on(`API_RUNNING_QUEUE_EMPTY`, maybeRebuildSchema)
+  emitter.on(`API_RUNNING_START`, boundMarkAsPending)
+  emitter.on(`API_RUNNING_QUEUE_EMPTY`, controlledMaybeRebuildSchema)
 }
 
 export function stopSchemaHotReloader(): void {
-  emitter.off(`API_RUNNING_QUEUE_EMPTY`, maybeRebuildSchema)
-  maybeRebuildSchema.cancel()
+  emitter.off(`API_RUNNING_START`, boundMarkAsPending)
+  emitter.off(`API_RUNNING_QUEUE_EMPTY`, controlledMaybeRebuildSchema)
 }
