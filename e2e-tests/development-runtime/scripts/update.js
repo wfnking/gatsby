@@ -40,6 +40,9 @@ async function update() {
   const history = await getHistory()
 
   const { file: fileArg, replacements } = args
+
+  console.log(`Running "npm update"`, args)
+
   const filePath = path.resolve(fileArg)
   let exists = true
   if (!fs.existsSync(filePath)) {
