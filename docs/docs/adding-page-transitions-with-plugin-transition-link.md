@@ -17,7 +17,7 @@ For other page transition options, see the [overview on adding page animations](
 First, install the plugin:
 
 ```shell
-npm install --save gatsby-plugin-transition-link
+npm install gatsby-plugin-transition-link
 ```
 
 Make sure to add the plugin to your `gatsby-config.js`:
@@ -43,7 +43,7 @@ You can use the `AniLink` component to add page transitions without having to de
 To use AniLink, you will need to install the `gsap` animation library:
 
 ```shell
-npm install --save gsap
+npm install gsap
 ```
 
 Then, import the AniLink component:
@@ -97,7 +97,7 @@ You can specify a `trigger` function that will handle the animation. This is use
 
 ### Using passed props
 
-The exiting and entering pages/templates involved in the transition will receive props indicating the current transition status, as well as the `exit` or `enter` props defined on the `TransitionLink`.
+The exiting and entering pages/templates involved in the transition will receive props indicating the current transition status, as well as the `exit` or `entry` props defined on the `TransitionLink`.
 
 ```jsx
 const PageOrTemplate = ({ children, transitionStatus, entry, exit }) => {
@@ -121,10 +121,10 @@ const Box = posed.div({
 })
 
 <TransitionState>
-      {({ transitionStatus, exit, enter, mount }) => {
+      {({ transitionStatus, exit, entry, mount }) => {
         console.log("current page's transition status is", transitionStatus)
         console.log("exit object is", exit)
-        console.log("enter object is", enter)
+        console.log("entry object is", entry)
 
         return (
             <Box

@@ -85,12 +85,12 @@ By default, this configuration will allow you to automatically create pages
 with `.mdx` files in `src/pages` and will process any Gatsby nodes
 with Markdown media types into MDX content.
 
-Note that `gatsby-plugin-mdx` requires gatsby-source-filesystem to be present
+Note that `gatsby-plugin-mdx` requires `gatsby-source-filesystem` to be present
 and configured to process local markdown files in order to
 generate the resulting Gatsby nodes.
 
 To automatically create pages with `.mdx` from other sources, you also need
-to configure gatsby-plugin-page-creator.
+to configure `gatsby-plugin-page-creator`.
 
 ```js
 module.exports = {
@@ -376,7 +376,12 @@ module.exports = {
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
-        remarkPlugins: [require("remark-abbr")],
+        remarkPlugins: [
+          require("remark-abbr"),
+          // To pass options, use a 2-element array with the
+          // configuration in an object in the second element
+          [require("remark-external-links"), { target: false }],
+        ],
       },
     },
   ],
@@ -398,7 +403,12 @@ module.exports = {
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
-        rehypePlugins: [require("rehype-slug")],
+        rehypePlugins: [
+          require("rehype-slug"),
+          // To pass options, use a 2-element array with the
+          // configuration in an object in the second element
+          [require("rehype-autolink-headings"), { behavior: "wrap" }],
+        ],
       },
     },
   ],
@@ -475,7 +485,9 @@ all of the MDX content.
 import { MDXProvider } from "@mdx-js/react"
 
 const MyH1 = props => <h1 style={{ color: "tomato" }} {...props} />
-const MyParagraph = props => <p style={{ fontSize: "18px", lineHeight: 1.6 }} />
+const MyParagraph = props => (
+  <p style={{ fontSize: "18px", lineHeight: 1.6 }} {...props} />
+)
 
 const components = {
   h1: MyH1,

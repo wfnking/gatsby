@@ -4,7 +4,7 @@ title: API Specification
 
 Gatsby's APIs are tailored conceptually to some extent after React.js to improve the coherence between the two systems.
 
-The two top priorities of the API are a) enable a broad and robust plugin ecosystem and b) on top of that a broad and robust theme ecosystem.
+The two top priorities of the API are : a) enable a broad and robust plugin ecosystem and b) build on top of that a broad and robust theme ecosystem.
 
 ## Prerequisites
 
@@ -61,7 +61,7 @@ Gatsby has multiple processes. The most prominent is the "bootstrap" process. It
 
 The bootstrap process is as follows:
 
-load site config -> load plugins -> source nodes -> transform nodes -> create graphql schema -> create pages -> compile component queries -> run queries -> fin
+load site config -> load plugins -> source nodes -> transform nodes -> create GraphQL schema -> create pages -> compile component queries -> run queries -> fin
 
 Once the initial bootstrap is finished, a `webpack-dev-server` and express server are started for serving files for the development workflow with live updates. For a production build, Gatsby skips the development server and instead builds the CSS, then JavaScript, then static HTML with webpack.
 
@@ -71,4 +71,4 @@ At each extension point, Gatsby identifies the plugins which implement the API a
 
 In addition to extension APIs in a node, plugins can also implement extension APIs in the server rendering process and the browser e.g. `onClientEntry` or `onRouteUpdate`.
 
-The three main inspirations for this API and spec are React.js' API specifically [@leebyron's email on the React API](https://gist.github.com/vjeux/f2b015d230cc1ab18ed1df30550495ed), this talk ["How to Design a Good API and Why it Matters" by Joshua Bloch](https://www.youtube.com/watch?v=heh4OeB9A-c&app=desktop) who designed many parts of Java, and [Hapi.js](https://hapijs.com/api)' plugin design.
+The three main inspirations for this API and spec are React.js' API specifically [@leebyron's email on the React API](https://gist.github.com/vjeux/f2b015d230cc1ab18ed1df30550495ed), this talk ["How to Design a Good API and Why it Matters" by Joshua Bloch](https://www.youtube.com/watch?v=heh4OeB9A-c) who designed many parts of Java, and [Hapi.js](https://hapi.dev/api)' plugin design.

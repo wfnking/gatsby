@@ -4,7 +4,7 @@ Provides drop-in support for Less stylesheets
 
 ## Install
 
-`npm install --save gatsby-plugin-less`
+`npm install gatsby-plugin-less`
 
 ## How to use
 
@@ -17,7 +17,7 @@ plugins: [`gatsby-plugin-less`]
 ```
 
 If you need to pass options to the Less loader use the `loaderOptions` and to Less use `lessOptions` object;
-see [less-loader](https://github.com/webpack-contrib/less-loader) for all available options.
+see [`less-loader`](https://github.com/webpack-contrib/less-loader) for all available options.
 
 ```javascript
 // in gatsby-config.js
@@ -37,7 +37,8 @@ plugins: [
 ]
 ```
 
-If you need to override the default options passed into [`css-loader`](https://github.com/webpack-contrib/css-loader)
+If you need to override the default options passed into [`css-loader`](https://github.com/webpack-contrib/css-loader/tree/version-1)
+**Note:** Gatsby is using `css-loader@1.0.1`.
 
 ```javascript
 // in gatsby-config.js
@@ -89,7 +90,7 @@ plugins: [
 ### v2.0.0
 
 - `less` is moved to a peer dependency. Installing the package
-  alongside `gatsby-plugin-less` is now required. Use `npm install --save less`
+  alongside `gatsby-plugin-less` is now required. Use `npm install less`
 
 - support Gatsby v2 only
 

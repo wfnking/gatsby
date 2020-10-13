@@ -3,6 +3,116 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.42](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.41...gatsby-plugin-sharp@2.6.42) (2020-10-12)
+
+### Features
+
+- **gatsby-plugin-sharp:** added option to allow sharp process to continue with errors ([#27345](https://github.com/gatsbyjs/gatsby/issues/27345)) ([1da5926](https://github.com/gatsbyjs/gatsby/commit/1da5926959b1c451ce1c0e6444a195a6c5616e82))
+
+## [2.6.41](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.40...gatsby-plugin-sharp@2.6.41) (2020-10-12)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.40](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.39...gatsby-plugin-sharp@2.6.40) (2020-10-09)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.39](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.38...gatsby-plugin-sharp@2.6.39) (2020-10-06)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.38](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.37...gatsby-plugin-sharp@2.6.38) (2020-10-01)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.37](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.36...gatsby-plugin-sharp@2.6.37) (2020-09-28)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.36](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.35...gatsby-plugin-sharp@2.6.36) (2020-09-15)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.35](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.34...gatsby-plugin-sharp@2.6.35) (2020-09-10)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.34](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.33...gatsby-plugin-sharp@2.6.34) (2020-09-09)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.33](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.32...gatsby-plugin-sharp@2.6.33) (2020-09-08)
+
+### Bug Fixes
+
+- **gatsby-plugin-sharp:** Don't swallow sharp errors ([#26806](https://github.com/gatsbyjs/gatsby/issues/26806)) ([5549a23](https://github.com/gatsbyjs/gatsby/commit/5549a23))
+
+## [2.6.32](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.31...gatsby-plugin-sharp@2.6.32) (2020-09-07)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.31](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.30...gatsby-plugin-sharp@2.6.31) (2020-08-31)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.30](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.29...gatsby-plugin-sharp@2.6.30) (2020-08-28)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.29](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.28...gatsby-plugin-sharp@2.6.29) (2020-08-26)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.28](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.27...gatsby-plugin-sharp@2.6.28) (2020-08-24)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.27](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.26...gatsby-plugin-sharp@2.6.27) (2020-08-11)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.26](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.25...gatsby-plugin-sharp@2.6.26) (2020-08-10)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.25](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.24...gatsby-plugin-sharp@2.6.25) (2020-08-05)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.24](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.23...gatsby-plugin-sharp@2.6.24) (2020-07-30)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.23](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.22...gatsby-plugin-sharp@2.6.23) (2020-07-28)
+
+### Bug Fixes
+
+- do not augment plugin-options ([#26006](https://github.com/gatsbyjs/gatsby/issues/26006)) ([222920b](https://github.com/gatsbyjs/gatsby/commit/222920b))
+
+## [2.6.22](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.21...gatsby-plugin-sharp@2.6.22) (2020-07-24)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.21](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.20...gatsby-plugin-sharp@2.6.21) (2020-07-21)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.20](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.19...gatsby-plugin-sharp@2.6.20) (2020-07-20)
+
+### Bug Fixes
+
+- **gatsby-plugin-sharp:** return correct height ([#25150](https://github.com/gatsbyjs/gatsby/issues/25150)) ([f1ace29](https://github.com/gatsbyjs/gatsby/commit/f1ace29))
+
+## [2.6.19](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.18...gatsby-plugin-sharp@2.6.19) (2020-07-09)
+
+**Note:** Version bump only for package gatsby-plugin-sharp
+
+## [2.6.18](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.17...gatsby-plugin-sharp@2.6.18) (2020-07-06)
+
+### Bug Fixes
+
+- **gatsby-transformer-sharp:** removed unnecessary conversion to webp ([#25325](https://github.com/gatsbyjs/gatsby/issues/25325)) ([a5459bc](https://github.com/gatsbyjs/gatsby/commit/a5459bc))
+
 ## [2.6.17](https://github.com/gatsbyjs/gatsby/compare/gatsby-plugin-sharp@2.6.16...gatsby-plugin-sharp@2.6.17) (2020-07-02)
 
 **Note:** Version bump only for package gatsby-plugin-sharp

@@ -168,7 +168,7 @@ excellent tool.
 Visit `http://localhost:8000/___graphql` in the browser and you'll be greeted
 with this lovely dev tool:
 
-![Gatsby Graphiql](https://dropsinn.s3.amazonaws.com/Screen%20Shot%202017-08-26%20at%201.31.08%20PM.png)
+![Gatsby GraphiQL](https://dropsinn.s3.amazonaws.com/Screen%20Shot%202017-08-26%20at%201.31.08%20PM.png)
 
 I recommend getting to know this tool if you're not already familiar. You will
 be coming back to this often to find the right query to pull data for your
@@ -181,7 +181,7 @@ Let's fix that. We need to teach Gatsby how to query the file system. Luckily
 this is so common it's been done for you. Install the file system source plugin:
 
 ```shell
-npm i --save gatsby-source-filesystem
+npm install gatsby-source-filesystem
 ```
 
 Now modify `gatsby-config.js` to both use the plugin and tell it what directory
@@ -230,7 +230,7 @@ files this is all you will need. But if you want to render markdown files as
 HTML you will need another plugin. Let's add that now:
 
 ```shell
-npm i --save gatsby-transformer-remark
+npm install gatsby-transformer-remark
 ```
 
 As before, add it to the `plugins` field in `gatsby-config.js`:
@@ -343,8 +343,8 @@ be intuitive.
   global
 
 The error handling is pretty straightforward, if a bit verbose, as long as you
-know what graphql responses look like. In case you didn't know, if you get an
-error in a graphql query the response will contain the `errors` array. We check
+know what GraphQL responses look like. In case you didn't know, if you get an
+error in a GraphQL query the response will contain the `errors` array. We check
 for this array and handle it accordingly.
 
 Now let's looks specifically at where we render a link for each blog post:

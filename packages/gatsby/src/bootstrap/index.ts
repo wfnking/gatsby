@@ -16,10 +16,12 @@ import { Runner, createGraphQLRunner } from "./create-graphql-runner"
 import reporter from "gatsby-cli/lib/reporter"
 import { globalTracer } from "opentracing"
 import JestWorker from "jest-worker"
+import { handleStalePageData } from "../utils/page-data"
+
 const tracer = globalTracer()
 
 export async function bootstrap(
-  initialContext: IBuildContext
+  initialContext: Partial<IBuildContext>
 ): Promise<{
   gatsbyNodeGraphQLFunction: Runner
   workerPool: JestWorker
@@ -28,11 +30,16 @@ export async function bootstrap(
     ? { childOf: initialContext.parentSpan }
     : {}
 
-  initialContext.parentSpan = tracer.startSpan(`bootstrap`, spanArgs)
+  const parentSpan = tracer.startSpan(`bootstrap`, spanArgs)
+
+  const bootstrapContext: IBuildContext = {
+    ...initialContext,
+    parentSpan,
+  }
 
   const context = {
-    ...initialContext,
-    ...(await initialize(initialContext)),
+    ...bootstrapContext,
+    ...(await initialize(bootstrapContext)),
   }
 
   await customizeSchema(context)
@@ -49,6 +56,8 @@ export async function bootstrap(
 
   await createPagesStatefully(context)
 
+  await handleStalePageData()
+
   await rebuildSchemaWithSitePage(context)
 
   await extractQueries(context)
@@ -59,7 +68,7 @@ export async function bootstrap(
 
   await postBootstrap(context)
 
-  initialContext.parentSpan.finish()
+  parentSpan.finish()
 
   return {
     gatsbyNodeGraphQLFunction: context.gatsbyNodeGraphQLFunction,

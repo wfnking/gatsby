@@ -23,6 +23,7 @@ const { getNode, getNodesByType } = require(`../redux/nodes`)
 const apiRunner = require(`../utils/api-runner-node`)
 const report = require(`gatsby-cli/lib/reporter`)
 const { addNodeInterfaceFields } = require(`./types/node-interface`)
+const { overridableBuiltInTypeNames } = require(`./types/built-in-types`)
 const { addInferredType, addInferredTypes } = require(`./infer`)
 const {
   findOne,
@@ -35,15 +36,16 @@ const {
   internalExtensionNames,
 } = require(`./extensions`)
 import { getPagination } from "./types/pagination"
-const { getSortInput, SORTABLE_ENUM } = require(`./types/sort`)
-const { getFilterInput, SEARCHABLE_ENUM } = require(`./types/filter`)
-const { isGatsbyType, GatsbyGraphQLTypeKind } = require(`./types/type-builders`)
+import { getSortInput, SORTABLE_ENUM } from "./types/sort"
+import { getFilterInput, SEARCHABLE_ENUM } from "./types/filter"
+import { isGatsbyType, GatsbyGraphQLTypeKind } from "./types/type-builders"
+
 const {
   isASTDocument,
   parseTypeDef,
   reportParsingError,
 } = require(`./types/type-defs`)
-const { clearDerivedTypes } = require(`./types/derived-types`)
+import { clearDerivedTypes } from "./types/derived-types"
 const { printTypeDefinitions } = require(`./print`)
 
 const buildSchema = async ({
@@ -337,52 +339,60 @@ const mergeTypes = ({
   createdFrom,
   parentSpan,
 }) => {
-  // Only allow user or plugin owning the type to extend already existing type.
+  // The merge is considered safe when a user or a plugin owning the type extend this type
+  // TODO: add proper conflicts detection and reporting (on the field level)
   const typeOwner = typeComposer.getExtension(`plugin`)
-  if (
+  const isOverridableBuiltInType =
+    !typeOwner && overridableBuiltInTypeNames.has(typeComposer.getTypeName())
+
+  const isSafeMerge =
     !plugin ||
     plugin.name === `default-site-plugin` ||
-    plugin.name === typeOwner
-  ) {
-    if (type instanceof ObjectTypeComposer) {
-      mergeFields({ typeComposer, fields: type.getFields() })
-      type.getInterfaces().forEach(iface => typeComposer.addInterface(iface))
-    } else if (type instanceof InterfaceTypeComposer) {
-      mergeFields({ typeComposer, fields: type.getFields() })
-    } else if (type instanceof GraphQLObjectType) {
-      mergeFields({
-        typeComposer,
-        fields: defineFieldMapToConfig(type.getFields()),
-      })
-      type.getInterfaces().forEach(iface => typeComposer.addInterface(iface))
-    } else if (type instanceof GraphQLInterfaceType) {
-      mergeFields({
-        typeComposer,
-        fields: defineFieldMapToConfig(type.getFields()),
-      })
+    plugin.name === typeOwner ||
+    isOverridableBuiltInType
+
+  if (!isSafeMerge) {
+    if (typeOwner) {
+      report.warn(
+        `Plugin \`${plugin.name}\` has customized the GraphQL type ` +
+          `\`${typeComposer.getTypeName()}\`, which has already been defined ` +
+          `by the plugin \`${typeOwner}\`. ` +
+          `This could potentially cause conflicts.`
+      )
+    } else {
+      report.warn(
+        `Plugin \`${plugin.name}\` has customized the built-in Gatsby GraphQL type ` +
+          `\`${typeComposer.getTypeName()}\`. ` +
+          `This is allowed, but could potentially cause conflicts.`
+      )
     }
-
-    if (isNamedTypeComposer(type)) {
-      typeComposer.extendExtensions(type.getExtensions())
-    }
-
-    addExtensions({ schemaComposer, typeComposer, plugin, createdFrom })
-
-    return true
-  } else if (typeOwner) {
-    report.warn(
-      `Plugin \`${plugin.name}\` tried to define the GraphQL type ` +
-        `\`${typeComposer.getTypeName()}\`, which has already been defined ` +
-        `by the plugin \`${typeOwner}\`.`
-    )
-    return false
-  } else {
-    report.warn(
-      `Plugin \`${plugin.name}\` tried to define built-in Gatsby GraphQL type ` +
-        `\`${typeComposer.getTypeName()}\``
-    )
-    return false
   }
+
+  if (type instanceof ObjectTypeComposer) {
+    mergeFields({ typeComposer, fields: type.getFields() })
+    type.getInterfaces().forEach(iface => typeComposer.addInterface(iface))
+  } else if (type instanceof InterfaceTypeComposer) {
+    mergeFields({ typeComposer, fields: type.getFields() })
+  } else if (type instanceof GraphQLObjectType) {
+    mergeFields({
+      typeComposer,
+      fields: defineFieldMapToConfig(type.getFields()),
+    })
+    type.getInterfaces().forEach(iface => typeComposer.addInterface(iface))
+  } else if (type instanceof GraphQLInterfaceType) {
+    mergeFields({
+      typeComposer,
+      fields: defineFieldMapToConfig(type.getFields()),
+    })
+  }
+
+  if (isNamedTypeComposer(type)) {
+    typeComposer.extendExtensions(type.getExtensions())
+  }
+
+  addExtensions({ schemaComposer, typeComposer, plugin, createdFrom })
+
+  return true
 }
 
 const processAddedType = ({

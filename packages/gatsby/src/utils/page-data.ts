@@ -1,4 +1,6 @@
+import { walkStream as fsWalkStream, Entry } from "@nodelib/fs.walk"
 import fs from "fs-extra"
+import reporter from "gatsby-cli/lib/reporter"
 import path from "path"
 import { IGatsbyPage } from "../redux/types"
 import { websocketManager } from "./websocket-manager"
@@ -11,6 +13,7 @@ interface IPageData {
   componentChunkName: IGatsbyPage["componentChunkName"]
   matchPath?: IGatsbyPage["matchPath"]
   path: IGatsbyPage["path"]
+  staticQueryHashes: Array<string>
 }
 
 export interface IPageDataWithQueryResult extends IPageData {
@@ -53,9 +56,18 @@ export async function removePageData(
   return Promise.resolve()
 }
 
+export function pageDataExists(publicDir: string, pagePath: string): boolean {
+  return fs.existsSync(getFilePath(publicDir, pagePath))
+}
+
 export async function writePageData(
   publicDir: string,
-  { componentChunkName, matchPath, path: pagePath }: IPageData
+  {
+    componentChunkName,
+    matchPath,
+    path: pagePath,
+    staticQueryHashes,
+  }: IPageData
 ): Promise<IPageDataWithQueryResult> {
   const inputFilePath = path.join(
     publicDir,
@@ -71,6 +83,7 @@ export async function writePageData(
     path: pagePath,
     matchPath,
     result,
+    staticQueryHashes,
   }
   const bodyStr = JSON.stringify(body)
   // transform asset size to kB (from bytes) to fit 64 bit to numbers
@@ -102,7 +115,13 @@ export async function flush(): Promise<void> {
   }
   isFlushPending = false
   isFlushing = true
-  const { pendingPageDataWrites, components, pages, program } = store.getState()
+  const {
+    pendingPageDataWrites,
+    components,
+    pages,
+    program,
+    staticQueriesByTemplate,
+  } = store.getState()
 
   const { pagePaths, templatePaths } = pendingPageDataWrites
 
@@ -127,9 +146,15 @@ export async function flush(): Promise<void> {
     // them, a page might not exist anymore щ（ﾟДﾟщ）
     // This is why we need this check
     if (page) {
+      const staticQueryHashes =
+        staticQueriesByTemplate.get(page.componentPath) || []
+
       const result = await writePageData(
         path.join(program.directory, `public`),
-        page
+        {
+          ...page,
+          staticQueryHashes,
+        }
       )
 
       if (program?._?.[0] === `develop`) {
@@ -154,4 +179,53 @@ export function enqueueFlush(): void {
   } else {
     flush()
   }
+}
+
+export async function handleStalePageData(): Promise<void> {
+  if (!(await fs.pathExists(`public/page-data`))) {
+    return
+  }
+
+  // public directory might have stale page-data files from previous builds
+  // we get the list of those and compare against expected page-data files
+  // and remove ones that shouldn't be there anymore
+
+  const activity = reporter.activityTimer(`Cleaning up stale page-data`)
+  activity.start()
+
+  const pageDataFilesFromPreviousBuilds = await new Promise<Set<string>>(
+    (resolve, reject) => {
+      const results = new Set<string>()
+
+      const stream = fsWalkStream(`public/page-data`)
+
+      stream.on(`data`, (data: Entry) => {
+        if (data.name === `page-data.json`) {
+          results.add(data.path)
+        }
+      })
+
+      stream.on(`error`, e => {
+        reject(e)
+      })
+
+      stream.on(`end`, () => resolve(results))
+    }
+  )
+
+  const expectedPageDataFiles = new Set<string>()
+  store.getState().pages.forEach(page => {
+    expectedPageDataFiles.add(getFilePath(`public`, page.path))
+  })
+
+  const deletionPromises: Array<Promise<void>> = []
+  pageDataFilesFromPreviousBuilds.forEach(pageDataFilePath => {
+    if (!expectedPageDataFiles.has(pageDataFilePath)) {
+      deletionPromises.push(fs.remove(pageDataFilePath))
+    }
+  })
+
+  await Promise.all(deletionPromises)
+
+  activity.end()
 }
